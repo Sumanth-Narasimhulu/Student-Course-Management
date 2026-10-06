@@ -10,6 +10,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -33,13 +34,28 @@ public class Teacher {
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
+    @ManyToOne 
+    @JoinColumn (name = "department_id")
+    private Department department;
 
-    @OneToMany(mappedBy = "teacher")
+
+    @OneToMany(mappedBy = "teacher",fetch = FetchType.LAZY)
     private List<Course> courses = new ArrayList<>();
+
+    @Column (name = "isDeleted")
+    private Boolean isDeleted=false;
 
 
     public Long getId() {
         return id;
+    }
+    public void addCourse(Course course){
+        courses.add(course);
+        course.setTeacher(this);
+    }
+    public void removeCourse(Course course){
+        courses.remove(course);
+        course.setTeacher(null);
     }
 
 
@@ -95,6 +111,22 @@ public class Teacher {
 
     public void setCourses(List<Course> courses) {
         this.courses = courses;
+    }
+
+
+    public Department getDepartment() {
+        return department;
+    }
+
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+    public Boolean getIsDeleted() {
+        return isDeleted;
+    }
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
     }
 
 

@@ -1,6 +1,7 @@
 package com.studentmanagement.entity;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +15,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 @Entity
@@ -33,6 +35,28 @@ public class Student {
     private String degree;
 
     private Integer year;
+    private Boolean isDeleted = false;
+    private LocalDateTime createdAt;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    @PrePersist 
+    public void onCreate(){
+        this.createdAt = LocalDateTime.now();
+    }
+
+    public Boolean getIsDeleted() {
+        return isDeleted;
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
+    }
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
@@ -46,6 +70,14 @@ public class Student {
 
     public Long getId() {
         return id;
+    }
+    public void addEnrollment(Enrollment enrollment){
+        enrollments.add(enrollment);
+        enrollment.setStudent(this);
+    }
+    public void removeEnrollment(Enrollment enrollment){
+        enrollments.remove(enrollment);
+        enrollment.setStudent(null);
     }
 
     public void setId(Long id) {

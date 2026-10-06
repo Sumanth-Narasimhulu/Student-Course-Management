@@ -1,5 +1,6 @@
 package com.studentmanagement.entity;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,6 +14,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 @Entity
@@ -36,8 +38,22 @@ public class Course {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "teacher_id")
     private Teacher teacher;
+    @Column(name = "is_deleted",nullable = false)
+    private Boolean isDeleted = false;
+    private LocalDateTime createdAt;
+
+    @PrePersist 
+    public void onCreate(){
+        this.createdAt = LocalDateTime.now();
+    }
     public Long getId() {
         return id;
+    }
+    public Boolean getIsDeleted() {
+        return isDeleted;
+    }
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
     }
     public void setId(Long id) {
         this.id = id;
@@ -72,6 +88,9 @@ public class Course {
     }
     public void setAssignments(List<Assignment> assignments) {
         this.assignments = assignments;
+    }
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
     
     

@@ -1,0 +1,11 @@
+# Frontend dependencies
+frontend/node_modules/
+
+# Frontend production build
+frontend/dist/
+
+# Local environment
+frontend/.env
+
+# Maven
+target/

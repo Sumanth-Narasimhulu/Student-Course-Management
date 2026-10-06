@@ -1,5 +1,6 @@
 package com.studentmanagement.controller;
 
+import com.studentmanagement.dto.request.RefreshTokenRequest;
 import com.studentmanagement.dto.request.StudentLoginRequest;
 import com.studentmanagement.dto.request.StudentRegisterRequest;
 import com.studentmanagement.dto.response.StudentLoginResponse;
@@ -29,7 +30,16 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    
+    @PostMapping("/refresh")
+    public ResponseEntity<StudentLoginResponse>refresh(@RequestBody RefreshTokenRequest refreshTokenRequest){
+        StudentLoginResponse studentLoginResponse = authService.refresh(refreshTokenRequest.getRefreshToken());
+        return ResponseEntity.ok(studentLoginResponse);
+
+    }
+    @PostMapping("/logout")
+    public ResponseEntity<String>logout(@RequestBody RefreshTokenRequest refreshTokenRequest){
+        return ResponseEntity.ok(authService.revoke(refreshTokenRequest.getRefreshToken()));
+    }
 
 
 }

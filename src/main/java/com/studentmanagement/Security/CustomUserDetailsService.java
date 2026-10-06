@@ -6,6 +6,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
 import com.studentmanagement.entity.User;
+import com.studentmanagement.exception.ResourceNotFoundException;
 import com.studentmanagement.repository.UserRepository;
 @Component
 public class CustomUserDetailsService implements UserDetailsService{
@@ -17,7 +18,7 @@ public class CustomUserDetailsService implements UserDetailsService{
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUserName(username)
                     .orElseThrow(()->
-                        new UsernameNotFoundException("username not found "+ username)
+                        new ResourceNotFoundException("username not found "+ username)
                     );
         return new CustomUserDetails(user);
     }

@@ -49,12 +49,24 @@ public class Assignment {
     @OneToMany(mappedBy = "assignment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Submission> submissions = new ArrayList<>();
 
+
+    @Column(name = "description")
+    private String description;
+
     public Assignment() {
     }
 
     @PrePersist
     void onCreate() {
         this.createdAt = LocalDateTime.now();
+    }
+    public void addSubimssion(Submission submission){
+        submissions.add(submission);
+        submission.setAssignment(this);
+    }
+    public void removeSubmission(Submission submission){
+        submissions.remove(submission);
+        submission.setAssignment(null);
     }
 
     public Long getId() {
@@ -111,5 +123,15 @@ public class Assignment {
 
     public void setSubmissions(List<Submission> submissions) {
         this.submissions = submissions;
+    }
+
+    
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

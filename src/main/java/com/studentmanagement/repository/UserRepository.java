@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User,Long> {
-    @EntityGraph(attributePaths = {"roles","roles.permissions"})
+    @EntityGraph(attributePaths = {"roles","roles.permissions","student"})
     Optional<User> findByUserName(String userName);
+    
 }

@@ -1,12 +1,15 @@
 package com.studentmanagement.service;
 
 import com.studentmanagement.Security.JwtService;
+import com.studentmanagement.dto.request.RefreshTokenRequest;
 import com.studentmanagement.dto.request.StudentLoginRequest;
 import com.studentmanagement.dto.request.StudentRegisterRequest;
 import com.studentmanagement.dto.response.StudentLoginResponse;
+import com.studentmanagement.entity.RefreshToken;
 import com.studentmanagement.entity.Role;
 import com.studentmanagement.entity.Student;
 import com.studentmanagement.entity.User;
+import com.studentmanagement.exception.ResourceNotFoundException;
 import com.studentmanagement.repository.RoleRepository;
 import com.studentmanagement.repository.StudentRepository;
 import com.studentmanagement.repository.UserRepository;
@@ -16,6 +19,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -27,13 +31,15 @@ public class AuthService {
     private final RoleRepository roleRepository;
     private final AuthenticationManager authenticationManager;
     private JwtService jwtService;
-    public AuthService(UserRepository userRepository,StudentRepository studentRepository,PasswordEncoder passwordEncoder,RoleRepository roleRepository,AuthenticationManager authenticationManager,JwtService jwtService){
+    private RefreshTokenService refreshTokenService;
+    public AuthService(UserRepository userRepository,StudentRepository studentRepository,PasswordEncoder passwordEncoder,RoleRepository roleRepository,AuthenticationManager authenticationManager,JwtService jwtService,RefreshTokenService refreshTokenService){
         this.userRepository = userRepository;
         this.studentRepository = studentRepository;
         this.passwordEncoder = passwordEncoder;
         this.roleRepository = roleRepository;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
+        this.refreshTokenService = refreshTokenService;
     }
     @Transactional
     public String register(StudentRegisterRequest studentRegisterRequest){
@@ -45,8 +51,8 @@ public class AuthService {
        user.setPassword(passwordEncoder.encode(studentRegisterRequest.getPassword()));
        
       
-       Role userRole = roleRepository.findByName("USER")
-                    .orElseThrow(()-> new IllegalArgumentException("Role not found"));
+       Role userRole = roleRepository.findByName("STUDENT")
+                    .orElseThrow(()-> new ResourceNotFoundException("Role not found"));
        user.getRoles().add(userRole);
        userRepository.save(user);
 
@@ -68,8 +74,23 @@ public class AuthService {
     }
     public StudentLoginResponse login(StudentLoginRequest studentLoginRequest){
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(studentLoginRequest.getUserName(),studentLoginRequest.getPassword()));
-        return new StudentLoginResponse(jwtService.generateToken(authentication.getName()));
+        String jwtToken = jwtService.generateToken(authentication.getName());
+        User user = userRepository.findByUserName(jwtService.extractUserName(jwtToken))
+                    .orElseThrow(()-> new ResourceNotFoundException("username 404"));
 
+        String refreshToken = refreshTokenService.createRefreshToken(user);
+        return new StudentLoginResponse(jwtToken, refreshToken);
+
+    }
+    public StudentLoginResponse refresh(String refreshTokenRequest) {
+       RefreshToken oldRefreshToken = refreshTokenService.validateRefreshToken(refreshTokenRequest);
+       RefreshToken newRefreshToken = refreshTokenService.rotateRefreshToken(refreshTokenRequest);
+       String jwt = jwtService.generateToken(newRefreshToken.getUser().getUserName());
+       return new StudentLoginResponse(jwt, newRefreshToken.getRefreshToken());
+
+    }
+    public String revoke(String refreshToken){
+        return refreshTokenService.revokeRefreshToken(refreshToken);
     }
 
 }
